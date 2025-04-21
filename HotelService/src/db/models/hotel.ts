@@ -54,5 +54,3 @@ Hotel.init({
 });
 
 export default Hotel;
-
-// Hotel.create({ name: "", address: "", location: "" })
