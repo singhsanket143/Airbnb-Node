@@ -16,7 +16,7 @@ const logger = winston.createLogger({
                 data 
             };
             return JSON.stringify(output);
-        })
+        }),
     ),
     transports: [
         new winston.transports.Console(),
