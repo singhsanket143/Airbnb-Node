@@ -27,7 +27,7 @@ model Booking {
 
 model IdempotencyKey {
   id         Int      @id @default(autoincrement())
-  key        String   @unique // uuid 
+  idemKey    String   @unique // uuid 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   finalized  Boolean  @default(false)
