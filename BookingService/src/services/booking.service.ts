@@ -54,7 +54,5 @@ export async function confirmBookingService(idempotencyKey: string) {
 
         return booking;
 
-    });
-
-    
+    }); 
 }

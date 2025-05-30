@@ -1,17 +1,21 @@
-import IORedis, { Redis } from 'ioredis';
-import Redlock from 'redlock';
+import Redis from 'ioredis';
 import { serverConfig } from '.';
 
-// export const redisClient = new IORedis(serverConfig.REDIS_SERVER_URL);
-
+// Singleton pattern to connect to Redis
 function connectToRedis() {
     try {
 
         let connection: Redis;
 
+        const redisConfig = {
+            port: serverConfig.REDIS_PORT,
+            host: serverConfig.REDIS_HOST,
+            maxRetriesPerRequest: null, // Disable automatic reconnection
+        }
+
         return () => {
             if (!connection) {
-                connection = new IORedis(serverConfig.REDIS_SERVER_URL);
+                connection = new Redis(redisConfig);
                 return connection;
             }
 
@@ -26,10 +30,3 @@ function connectToRedis() {
 }
 
 export const getRedisConnObject = connectToRedis();
-
-export const redlock = new Redlock([getRedisConnObject()], {
-    driftFactor: 0.01, // time in ms
-    retryCount: 10,
-    retryDelay: 200, // time in ms
-    retryJitter: 200 // time in ms
-});
