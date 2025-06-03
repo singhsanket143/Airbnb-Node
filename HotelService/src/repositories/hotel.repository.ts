@@ -6,10 +6,14 @@ import { NotFoundError } from "../utils/errors/app.error";
 export async function createHotel(hotelData: createHotelDTO) {
     const hotel = await Hotel.create({
         name: hotelData.name,
+        description: hotelData.description,
+        hostId: hotelData.hostId,
+        cityId: hotelData.cityId,
+        stateId: hotelData.stateId,
+        pincode: hotelData.pincode,
         address: hotelData.address,
-        location: hotelData.location,
-        rating: hotelData.rating,
-        ratingCount: hotelData.ratingCount,
+        averageRating: hotelData.averageRating || 0, // Default to 0 if not provided
+        numberOfRatings: hotelData.numberOfRatings || 0 // Default to 0 if not provided
     });
 
     logger.info(`Hotel created: ${hotel.id}`);
