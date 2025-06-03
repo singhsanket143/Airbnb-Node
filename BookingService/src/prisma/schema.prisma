@@ -16,13 +16,13 @@ datasource db {
 model Booking {
   id                Int           @id @default(autoincrement())
   userId            Int
-  hotelId           Int
+  hotelId           Int           // Foreign key reference to Hotel service
+  bookingAmount     Int
+  totalGuests       Int
+  status            BookingStatus @default(PENDING)
+  idempotencyKey    IdempotencyKey?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-  bookingAmount     Int
-  status            BookingStatus @default(PENDING)
-  totalGuests       Int
-  idempotencyKey    IdempotencyKey?
 }
 
 model IdempotencyKey {
@@ -39,4 +39,40 @@ enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+model Room {
+  id                 Int           @id @default(autoincrement())
+  roomNo             String
+  dateOfAvailability DateTime
+  isAvailable        Boolean       @default(true)
+  hotelId            Int           
+
+  roomCategoryId     Int
+  roomCategory       RoomCategory  @relation(fields: [roomCategoryId], references: [id])
+
+  bookingId          Int?          
+  booking            Booking?      @relation(fields: [bookingId], references: [id])
+
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+enum RoomType {
+  SUITE
+  DELUX
+  NORMAL
+}
+
+model RoomCategory {
+  id         Int         @id @default(autoincrement())
+  price      Int
+  roomType   RoomType
+  hotelId    Int        
+  roomCount  Int
+
+  rooms      Room[]      
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 }
