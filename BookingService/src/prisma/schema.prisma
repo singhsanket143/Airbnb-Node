@@ -23,6 +23,7 @@ model Booking {
   status            BookingStatus @default(PENDING)
   totalGuests       Int
   idempotencyKey    IdempotencyKey?
+  reviews           Review[] // one booking can have multiple reviews
 }
 
 model IdempotencyKey {
@@ -39,4 +40,16 @@ enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+
+// The Review model represents a review for a booking
+model Review {
+  id Int @id @default(autoincrement())
+  rating Int
+  comment String
+  bookingId Int
+  booking Booking @relation(fields:[bookingId], references: [id]) // one review belongs to one booking
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
