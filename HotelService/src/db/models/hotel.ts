@@ -4,13 +4,17 @@ import sequelize from "./sequelize";
 class Hotel extends Model<InferAttributes<Hotel>, InferCreationAttributes<Hotel> > {
     declare id: CreationOptional<number>;
     declare name: string;
+    declare description: string;
+    declare hostId?: CreationOptional<number>;
+    declare cityId?: CreationOptional<number>;
+    declare stateId?: CreationOptional<number>;
+    declare pincode: string;
     declare address: string;
-    declare location: string;
+    declare averageRating?: number;
+    declare numberOfRatings?: number;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
     declare deletedAt: CreationOptional<Date | null>;
-    declare rating?: number;
-    declare ratingCount?: number;
 }
 
 Hotel.init({
@@ -23,13 +27,37 @@ Hotel.init({
         type: "STRING",
         allowNull: false,
     },
+    description: {
+        type: "TEXT",
+        allowNull: false,
+    },
+    hostId: {
+        type: "INTEGER",
+        allowNull: true,
+    },
+    cityId: {
+        type: "INTEGER",
+        allowNull: true,
+    },
+    stateId: {
+        type: "INTEGER",
+        allowNull: true,
+    },
+    pincode: {
+        type: "STRING",
+        allowNull: false,
+    },
     address: {
         type: "STRING",
         allowNull: false,
     },
-    location: {
-        type: "STRING",
-        allowNull: false,
+    averageRating: {
+        type: "FLOAT",
+        allowNull: true,
+    },
+    numberOfRatings: {
+        type: "INTEGER",
+        allowNull: true,
     },
     createdAt: {
         type: "DATE",
@@ -43,14 +71,6 @@ Hotel.init({
         type: "DATE",
         defaultValue: null,
     },
-    rating: {
-        type: "FLOAT",
-        defaultValue: null,
-    },
-    ratingCount: {
-        type: "INTEGER",
-        defaultValue: null,
-    }
 }, {
     tableName: "hotels",
     sequelize: sequelize,
