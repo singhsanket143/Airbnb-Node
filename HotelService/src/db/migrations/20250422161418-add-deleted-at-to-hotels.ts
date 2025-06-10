@@ -1,7 +1,7 @@
-import { DataTypes, QueryInterface } from "sequelize";
+import { DataTypes, QueryInterface } from 'sequelize';
 
 module.exports = {
-  async up (queryInterface: QueryInterface) {
+  async up(queryInterface: QueryInterface) {
     await queryInterface.addColumn('hotels', 'deleted_at', {
       type: DataTypes.DATE,
       allowNull: true,
@@ -9,7 +9,7 @@ module.exports = {
     });
   },
 
-  async down (queryInterface: QueryInterface) {
+  async down(queryInterface: QueryInterface) {
     await queryInterface.removeColumn('hotels', 'deleted_at');
-  }
+  },
 };
