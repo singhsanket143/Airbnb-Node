@@ -16,8 +16,10 @@ abstract class BaseRepository<T extends Model> {
         return record;
     }
 
-    async findAll(): Promise<T[]> {
-        const records = await this.model.findAll({});
+    async findAll(whereOptions?: WhereOptions<T>): Promise<T[]> {
+        const records = await this.model.findAll({
+            where: whereOptions
+        });
         if (!records) {
             return [];
         }
