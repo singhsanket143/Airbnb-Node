@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node src/server.ts",
-    "dev": "nodemon src/server.ts",
+    "dev2": "brew services start mysql && nodemon src/server.ts",
+    "dev": "chmod +x start-dev.sh && ./start-dev.sh",
     "migrate": "sequelize-cli db:migrate",
     "rollback": "sequelize-cli db:migrate:undo"
   },
