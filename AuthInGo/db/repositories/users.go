@@ -1,24 +1,89 @@
 package db
 
 import (
+	"AuthInGo/models"
+	"database/sql"
 	"fmt"
 )
 
 type UserRepository interface {
+	GetByID() (*models.User, error)
 	Create() error
+	GetAll() ([]*models.User, error)
+	DeleteByID(id int64) error
 }
 
 type UserRepositoryImpl struct {
-	// db *sql.DB
+	db *sql.DB
 }
 
-func NewUserRepository() UserRepository {
+func NewUserRepository(_db *sql.DB) UserRepository {
 	return &UserRepositoryImpl{
-		// db: db,
+		db: _db,
 	}
 }
 
-func (u *UserRepositoryImpl) Create() error {
-	fmt.Println("Creating user in UserRepository")
+func (u *UserRepositoryImpl) GetAll() ([]*models.User, error) {
+	return nil, nil
+}
+
+func (u *UserRepositoryImpl) DeleteByID(id int64) error {
 	return nil
+}
+
+func (u *UserRepositoryImpl) Create() error {
+	query := "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
+
+	result, err := u.db.Exec(query, "testuser", "test@test.com", "password123")
+
+	if err != nil {
+		fmt.Println("Error inserting user:", err)
+		return err
+	}
+
+	rowsAffected, rowErr := result.RowsAffected()
+
+	if rowErr != nil {
+		fmt.Println("Error getting rows affected:", rowErr)
+		return rowErr
+	}
+
+	if rowsAffected == 0 {
+		fmt.Println("No rows were affected, user not created")
+		return nil
+	}
+
+	fmt.Println("User created successfully, rows affected:", rowsAffected)
+
+	return nil
+}
+
+func (u *UserRepositoryImpl) GetByID() (*models.User, error) {
+	fmt.Println("Getching user in UserRepository")
+
+	// Step 1: Prepare the query
+	query := "SELECT id, username, email, created_at, updated_at FROM users WHERE id = ?"
+
+	// Step 2: Execute the query
+	row := u.db.QueryRow(query, 1)
+
+	// Step 3: Process the result
+	user := &models.User{}
+
+	err := row.Scan(&user.Id, &user.Username, &user.Email, &user.CreatedAt, &user.UpdatedAt)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("No user found with the given ID")
+			return nil, err
+		} else {
+			fmt.Println("Error scanning user:", err)
+			return nil, err
+		}
+	}
+
+	// Step 4: Print the user details
+	fmt.Println("User fetched successfully:", user)
+
+	return user, nil
 }
