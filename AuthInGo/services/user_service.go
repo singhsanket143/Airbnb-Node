@@ -3,6 +3,7 @@ package services
 import (
 	env "AuthInGo/config/env"
 	db "AuthInGo/db/repositories"
+	"AuthInGo/models"
 	"AuthInGo/utils"
 	"fmt"
 
@@ -10,9 +11,11 @@ import (
 )
 
 type UserService interface {
-	GetUserById() error
-	CreateUser() error
-	LoginUser() (string, error)
+	GetUserById(id int64) (*models.User, error)
+	GetAllUsers() ([]*models.User, error)
+	CreateUser(userDTO *models.CreateUserDTO) error
+	LoginUser(username string, password string) (string, error)
+	DeleteUserById(id int64) error
 }
 
 type UserServiceImpl struct {
@@ -25,31 +28,36 @@ func NewUserService(_userRepository db.UserRepository) UserService {
 	}
 }
 
-func (u *UserServiceImpl) GetUserById() error {
+// * COMPLETED
+func (u *UserServiceImpl) GetUserById(id int64) (*models.User, error) {
 	fmt.Println("Fetching user in UserService")
-	u.userRepository.GetByID()
-	return nil
+	user, err := u.userRepository.GetByID(id)
+	return user, err
 }
 
-func (u *UserServiceImpl) CreateUser() error {
+func (u *UserServiceImpl) GetAllUsers() ([]*models.User, error) {
+	fmt.Println("Fetching all users in UserService")
+	users, err := u.userRepository.GetAll()
+	return users, err
+}
+
+// * COMPLETED
+func (u *UserServiceImpl) CreateUser(userDTO *models.CreateUserDTO) error {
 	fmt.Println("Creating user in UserService")
-	password := "example_password"
-	hashedPassword, err := utils.HashPassword(password)
+	hashedPassword, err := utils.HashPassword(userDTO.Password)
 	if err != nil {
 		return err
 	}
-	u.userRepository.Create(
-		"username_example_1",
-		"user1@example.com",
+	err = u.userRepository.Create(
+		userDTO.Username,
+		userDTO.Email,
 		hashedPassword,
 	)
-	return nil
+	return err
 }
 
-func (u *UserServiceImpl) LoginUser() (string, error) {
-	// Pre-requisite: This function will be given email and password as parameter, which we can hardcode for now
-	email := "user1@example.com"
-	password := "example_password"
+// * COMPLETED
+func (u *UserServiceImpl) LoginUser(email string, password string) (string, error) {
 
 	// Step 1. Make a repository call to get the user by email
 	user, err := u.userRepository.GetByEmail(email)
@@ -91,4 +99,10 @@ func (u *UserServiceImpl) LoginUser() (string, error) {
 	fmt.Println("JWT Token:", tokenString)
 
 	return tokenString, nil
+}
+
+func (u *UserServiceImpl) DeleteUserById(id int64) error {
+	fmt.Println("Deleting user in UserService")
+	err := u.userRepository.DeleteByID(id)
+	return err
 }
