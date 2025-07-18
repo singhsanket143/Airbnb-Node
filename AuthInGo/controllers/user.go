@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -74,7 +75,12 @@ func (uc *UserController) CreateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&user)
 	err := uc.UserService.CreateUser(&user)
 	if err != nil {
-		fmt.Println("Error creating user:", err)
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			http.Error(w, err.Error(), http.StatusConflict)
+		} else {
+			http.Error(w, "Error creating user ", http.StatusInternalServerError)
+		}
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{

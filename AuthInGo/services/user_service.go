@@ -78,7 +78,7 @@ func (u *UserServiceImpl) LoginUser(email string, password string) (string, erro
 
 	if !isPasswordValid {
 		fmt.Println("Password does not match")
-		return "", nil
+		return "", fmt.Errorf("password does not match for email: %s", email)
 	}
 
 	// Step 4. If password matches, print a JWT token, else return error saying password does not match
