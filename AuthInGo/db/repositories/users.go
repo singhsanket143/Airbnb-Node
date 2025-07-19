@@ -2,8 +2,10 @@ package db
 
 import (
 	"AuthInGo/models"
+	"AuthInGo/utils"
 	"database/sql"
 	"fmt"
+	"net/http"
 )
 
 type UserRepository interface {
@@ -44,10 +46,10 @@ func (u *UserRepositoryImpl) GetByEmail(email string) (*models.User, error) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			fmt.Println("No user found with the given email")
-			return nil, err
+			return nil, utils.NewStatusError(http.StatusBadRequest, fmt.Sprintf("User with provided email do not exist"), err)
 		} else {
 			fmt.Println("Error scanning user:", err)
-			return nil, err
+			return nil, utils.NewStatusError(http.StatusInternalServerError, "Internal Server Error while scanning DB Fetched Record", err)
 		}
 	}
 

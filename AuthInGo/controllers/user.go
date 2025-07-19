@@ -35,21 +35,22 @@ func (uc *UserController) LoginUser(w http.ResponseWriter, r *http.Request) {
 	var payload dto.LoginUserRequestDTO
 
 	if jsonErr := utils.ReadJsonBody(r, &payload); jsonErr != nil {
-		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Something went wrong while logging in", jsonErr)
+		statusError := utils.NewStatusError(http.StatusBadRequest, "Invalid JSON body or response body not present", jsonErr)
+		utils.WriteJsonErrorResponse(w, "Failed To Login", statusError)
 		return
 	}
 
 	fmt.Println("Payload received:", payload)
 
 	if validationErr := utils.Validator.Struct(payload); validationErr != nil {
-		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Invalid input data", validationErr)
+		utils.WriteJsonErrorResponse(w, "User Validation Failed", validationErr)
 		return
 	}
 
 	jwtToken, err := uc.UserService.LoginUser(&payload)
 
 	if err != nil {
-		utils.WriteJsonErrorResponse(w, http.StatusInternalServerError, "Failed to login user", err)
+		utils.WriteJsonErrorResponse(w, "Failed To Login", err)
 		return
 	}
 

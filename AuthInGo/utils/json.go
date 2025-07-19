@@ -36,12 +36,17 @@ func WriteJsonSuccessResponse(w http.ResponseWriter, status int, message string,
 	return WriteJsonResponse(w, status, response)
 }
 
-func WriteJsonErrorResponse(w http.ResponseWriter, status int, message string, err error) error {
+func WriteJsonErrorResponse(w http.ResponseWriter, message string, err error) error {
 	response := map[string]any{}
-	response["status"] = "error"
+	statusErr, ok := ExtractStatusError(err)
+	response["success"] = false
 	response["message"] = message
 	response["error"] = err.Error()
-	return WriteJsonResponse(w, status, response)
+	if ok {
+		return WriteJsonResponse(w, statusErr.ErrorCode(), response)
+	} else {
+		return WriteJsonResponse(w, http.StatusInternalServerError, response)
+	}
 }
 
 func ReadJsonBody(r *http.Request, result any) error {
