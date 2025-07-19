@@ -7,8 +7,8 @@ import (
 )
 
 type UserRepository interface {
-	GetByID() (*models.User, error)
-	Create(username string, email string, hashedPassword string) error
+	GetByID(id int64) (*models.User, error)
+	Create(username string, email string, hashedPassword string) (*models.User, error)
 	GetByEmail(email string) (*models.User, error)
 	GetAll() ([]*models.User, error)
 	DeleteByID(id int64) error
@@ -25,10 +25,51 @@ func NewUserRepository(_db *sql.DB) UserRepository {
 }
 
 func (u *UserRepositoryImpl) GetAll() ([]*models.User, error) {
-	return nil, nil
+	query := "SELECT id, username, email, created_at, updated_at FROM users"
+	rows, err := u.db.Query(query)
+	if err != nil {
+		fmt.Println("Error fetching users:", err)
+		return nil, err
+	}
+	defer rows.Close() // Ensure rows are closed after processing
+
+	var users []*models.User
+	for rows.Next() {
+		user := &models.User{}
+		if err := rows.Scan(&user.Id, &user.Username, &user.Email, &user.CreatedAt, &user.UpdatedAt); err != nil {
+			fmt.Println("Error scanning user:", err)
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error with rows:", err)
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func (u *UserRepositoryImpl) DeleteByID(id int64) error {
+	query := "DELETE FROM users WHERE id = ?"
+	result, err := u.db.Exec(query, id)
+
+	if err != nil {
+		fmt.Println("Error deleting user:", err)
+		return err
+	}
+
+	rowsAffected, rowErr := result.RowsAffected()
+	if rowErr != nil {
+		fmt.Println("Error getting rows affected:", rowErr)
+		return rowErr
+	}
+	if rowsAffected == 0 {
+		fmt.Println("No rows were affected, user not deleted")
+		return nil
+	}
+	fmt.Println("User deleted successfully, rows affected:", rowsAffected)
 	return nil
 }
 
@@ -54,41 +95,40 @@ func (u *UserRepositoryImpl) GetByEmail(email string) (*models.User, error) {
 	return user, nil
 }
 
-func (u *UserRepositoryImpl) Create(username string, email string, hashedPassword string) error {
+func (u *UserRepositoryImpl) Create(username string, email string, hashedPassword string) (*models.User, error) {
 	query := "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
-
 	result, err := u.db.Exec(query, username, email, hashedPassword)
 
 	if err != nil {
-		fmt.Println("Error inserting user:", err)
-		return err
+		fmt.Println("Error creating user:", err)
+		return nil, err
 	}
 
-	rowsAffected, rowErr := result.RowsAffected()
-
+	lastInsertID, rowErr := result.LastInsertId()
 	if rowErr != nil {
-		fmt.Println("Error getting rows affected:", rowErr)
-		return rowErr
+		fmt.Println("Error getting last insert ID:", rowErr)
+		return nil, rowErr
 	}
 
-	if rowsAffected == 0 {
-		fmt.Println("No rows were affected, user not created")
-		return nil
+	user := &models.User{
+		Id:       lastInsertID,
+		Username: username,
+		Email:    email,
 	}
 
-	fmt.Println("User created successfully, rows affected:", rowsAffected)
+	fmt.Println("User created successfully:", user)
 
-	return nil
+	return user, nil
 }
 
-func (u *UserRepositoryImpl) GetByID() (*models.User, error) {
-	fmt.Println("Getching user in UserRepository")
+func (u *UserRepositoryImpl) GetByID(id int64) (*models.User, error) {
+	fmt.Println("Fetching user in UserRepository")
 
 	// Step 1: Prepare the query
 	query := "SELECT id, username, email, created_at, updated_at FROM users WHERE id = ?"
 
 	// Step 2: Execute the query
-	row := u.db.QueryRow(query, 1)
+	row := u.db.QueryRow(query, id)
 
 	// Step 3: Process the result
 	user := &models.User{}
