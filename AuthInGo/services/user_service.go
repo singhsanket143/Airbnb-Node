@@ -6,6 +6,7 @@ import (
 	"AuthInGo/dto"
 	"AuthInGo/utils"
 	"fmt"
+	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -71,7 +72,7 @@ func (u *UserServiceImpl) LoginUser(payload *dto.LoginUserRequestDTO) (string, e
 
 	if !isPasswordValid {
 		fmt.Println("Password does not match")
-		return "", nil
+		return "", utils.NewStatusError(http.StatusUnauthorized, "Invalid credentials", nil)
 	}
 
 	// Step 4. If password matches, print a JWT token, else return error saying password does not match
