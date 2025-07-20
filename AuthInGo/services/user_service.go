@@ -12,7 +12,7 @@ import (
 )
 
 type UserService interface {
-	GetUserById(id int64) (*models.User, error)
+	GetUserById(id string) (*models.User, error)
 	CreateUser(payload *dto.CreateUserRequestDTO) (*models.User, error)
 	LoginUser(payload *dto.LoginUserRequestDTO) (string, error)
 }
@@ -27,7 +27,7 @@ func NewUserService(_userRepository db.UserRepository) UserService {
 	}
 }
 
-func (u *UserServiceImpl) GetUserById(id int64) (*models.User, error) {
+func (u *UserServiceImpl) GetUserById(id string) (*models.User, error) {
 	fmt.Println("Fetching user in UserService")
 	user, err := u.userRepository.GetByID(id)
 	if err != nil {

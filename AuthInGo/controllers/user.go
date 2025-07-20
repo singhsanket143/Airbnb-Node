@@ -6,7 +6,6 @@ import (
 	"AuthInGo/utils"
 	"fmt"
 	"net/http"
-	"strconv"
 )
 
 type UserController struct {
@@ -24,21 +23,22 @@ func (uc *UserController) GetUserById(w http.ResponseWriter, r *http.Request) {
 	// extract userid from url parameters
 	userId := r.URL.Query().Get("id")
 	if userId == "" {
+		userId = r.Context().Value("userID").(string) // Fallback to context if not in URL
+	}
+
+	fmt.Println("User ID from context or query:", userId)
+
+	if userId == "" {
 		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "User ID is required", fmt.Errorf("missing user ID"))
 		return
 	}
-	id, err := strconv.ParseInt(userId, 10, 64)
-	if err != nil {
-		utils.WriteJsonErrorResponse(w, http.StatusBadRequest, "Invalid user ID format", err)
-		return
-	}
-	user, err := uc.UserService.GetUserById(id)
+	user, err := uc.UserService.GetUserById(userId)
 	if err != nil {
 		utils.WriteJsonErrorResponse(w, http.StatusInternalServerError, "Failed to fetch user", err)
 		return
 	}
 	if user == nil {
-		utils.WriteJsonErrorResponse(w, http.StatusNotFound, "User not found", fmt.Errorf("user with ID %d not found", id))
+		utils.WriteJsonErrorResponse(w, http.StatusNotFound, "User not found", fmt.Errorf("user with ID %d not found", userId))
 		return
 	}
 	utils.WriteJsonSuccessResponse(w, http.StatusOK, "User fetched successfully", user)
