@@ -6,6 +6,7 @@ import (
 	"AuthInGo/dto"
 	"AuthInGo/models"
 	"AuthInGo/utils"
+	"database/sql"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -19,11 +20,13 @@ type UserService interface {
 
 type UserServiceImpl struct {
 	userRepository db.UserRepository
+	userRoleRepo   *db.UserRoleRepository
 }
 
-func NewUserService(_userRepository db.UserRepository) UserService {
+func NewUserService(_userRepository db.UserRepository, dbConn *sql.DB) UserService {
 	return &UserServiceImpl{
 		userRepository: _userRepository,
+		userRoleRepo:   db.NewUserRoleRepository(dbConn),
 	}
 }
 
@@ -54,7 +57,14 @@ func (u *UserServiceImpl) CreateUser(payload *dto.CreateUserRequestDTO) (*models
 		return nil, err
 	}
 
-	// Step 3. Return the created user
+	// Step 3. Assign default "user" role to the new user
+	err = u.userRoleRepo.AssignRoleToUser(user.Id, 2) // Role ID 2 is "user" role
+	if err != nil {
+		fmt.Println("Error assigning default role to user:", err)
+		// Don't fail the user creation if role assignment fails
+	}
+
+	// Step 4. Return the created user
 	return user, nil
 }
 

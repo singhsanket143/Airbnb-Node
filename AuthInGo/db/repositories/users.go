@@ -145,7 +145,17 @@ func (u *UserRepositoryImpl) GetByID(id string) (*models.User, error) {
 		}
 	}
 
-	// Step 4: Print the user details
+	// Step 4: Load user roles
+	userRoleRepo := NewUserRoleRepository(u.db)
+	roles, err := userRoleRepo.GetUserRoles(user.Id)
+	if err != nil {
+		fmt.Println("Error loading user roles:", err)
+		// Don't fail the request if roles can't be loaded
+	} else {
+		user.Roles = roles
+	}
+
+	// Step 5: Print the user details
 	fmt.Println("User fetched successfully:", user)
 
 	return user, nil

@@ -48,13 +48,16 @@ func (app *Application) Run() error {
 	}
 
 	ur := repo.NewUserRepository(db)
-	us := services.NewUserService(ur)
+	us := services.NewUserService(ur, db)
 	uc := controllers.NewUserController(us)
 	uRouter := router.NewUserRouter(uc)
 
+	// Add role router for RBAC
+	rRouter := router.NewRoleRouter(db)
+
 	server := &http.Server{
 		Addr:         app.Config.Addr,
-		Handler:      router.SetupRouter(uRouter),
+		Handler:      router.SetupRouter(uRouter, rRouter),
 		ReadTimeout:  10 * time.Second, // Set read timeout to 10 seconds
 		WriteTimeout: 10 * time.Second, // Set write timeout to 10 seconds
 	}
