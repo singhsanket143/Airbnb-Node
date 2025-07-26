@@ -1,15 +1,17 @@
 # Room Generation Background Job System
 
-This system allows you to generate room records for a specific room category and date range using background jobs. It supports both immediate execution and scheduled jobs.
+This system allows you to generate room records for a specific room category and date range using background jobs. It supports both immediate execution, scheduled jobs, and **automatic cron-based generation**.
 
 ## Features
 
 - **Immediate Room Generation**: Generate rooms instantly for a date range
 - **Scheduled Jobs**: Schedule room generation for a future time
+- **Automatic Cron Jobs**: Automatically generate rooms every 24 hours for the next 30 days
 - **Background Processing**: Uses Redis-backed Bull queue for reliable job processing
 - **Batch Processing**: Processes large date ranges in configurable batches
 - **Job Monitoring**: Track job status and progress
 - **Statistics**: Get room generation statistics and queue metrics
+- **Smart Coverage**: Skips room generation if sufficient coverage already exists
 
 ## Prerequisites
 
@@ -37,6 +39,10 @@ DB_PORT=3306
 DB_NAME=your_database
 DB_USER=your_username
 DB_PASSWORD=your_password
+
+# Cron Configuration (Optional)
+ROOM_GENERATION_CRON=0 2 * * *  # Daily at 2:00 AM (default)
+ROOM_GENERATION_DAYS_AHEAD=30   # Days ahead to generate (default: 30)
 ```
 
 3. Run database migrations:
@@ -46,16 +52,21 @@ npm run migrate
 
 ## Usage
 
-### Starting the Worker
+### Starting the Workers
 
-The background job worker processes room generation jobs. You can run it in several ways:
+The system has two types of workers:
 
-1. **Standalone Worker** (recommended for production):
+1. **Room Generation Worker** (processes individual jobs):
 ```bash
 npm run worker
 ```
 
-2. **Development Mode** (with the main application):
+2. **Cron Worker** (handles automatic daily generation):
+```bash
+npm run cron-worker
+```
+
+3. **Development Mode** (with the main application - includes cron scheduler):
 ```bash
 npm run dev
 ```
@@ -164,6 +175,66 @@ Get overall queue statistics.
 
 Get room generation statistics for a specific room category.
 
+### Cron Job Management Endpoints
+
+#### 1. Start Cron Scheduler
+
+**POST** `/api/v1/cron-room-generation/start`
+
+Start the automatic room generation scheduler.
+
+**Request Body:**
+```json
+{
+  "cronExpression": "0 2 * * *", // Optional: cron expression (default: daily at 2 AM)
+  "daysAhead": 30 // Optional: days ahead to generate (default: 30)
+}
+```
+
+#### 2. Stop Cron Scheduler
+
+**POST** `/api/v1/cron-room-generation/stop`
+
+Stop the automatic room generation scheduler.
+
+#### 3. Get Scheduler Status
+
+**GET** `/api/v1/cron-room-generation/status`
+
+Get the current status of the cron scheduler.
+
+#### 4. Execute Manual Generation
+
+**POST** `/api/v1/cron-room-generation/execute`
+
+Execute room generation manually for all categories.
+
+**Request Body:**
+```json
+{
+  "daysAhead": 30 // Optional: days ahead to generate (default: 30)
+}
+```
+
+#### 5. Execute Category Generation
+
+**POST** `/api/v1/cron-room-generation/execute/:roomCategoryId`
+
+Execute room generation for a specific category.
+
+**Request Body:**
+```json
+{
+  "daysAhead": 30 // Optional: days ahead to generate (default: 30)
+}
+```
+
+#### 6. Get Cron Statistics
+
+**GET** `/api/v1/cron-room-generation/stats`
+
+Get statistics about automatic room generation.
+
 **Response:**
 ```json
 {
@@ -216,6 +287,35 @@ curl -X POST http://localhost:3000/api/v1/room-generation \
 curl http://localhost:3000/api/v1/room-generation/job/job-id-here
 ```
 
+### Cron Job Examples
+
+### Example 4: Start Automatic Room Generation
+
+```bash
+curl -X POST http://localhost:3000/api/v1/cron-room-generation/start \
+  -H "Content-Type: application/json" \
+  -d '{
+    "cronExpression": "0 2 * * *",
+    "daysAhead": 30
+  }'
+```
+
+### Example 5: Execute Manual Generation
+
+```bash
+curl -X POST http://localhost:3000/api/v1/cron-room-generation/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "daysAhead": 30
+  }'
+```
+
+### Example 6: Get Cron Statistics
+
+```bash
+curl http://localhost:3000/api/v1/cron-room-generation/stats
+```
+
 ## Configuration
 
 ### Batch Size
@@ -228,6 +328,14 @@ Jobs are configured with:
 - **Max Attempts**: 3
 - **Backoff Strategy**: Exponential (2s, 4s, 8s)
 - **Job Cleanup**: Completed jobs are removed after 100 jobs, failed jobs after 50 jobs
+
+### Cron Configuration
+
+The automatic room generation runs by default:
+- **Schedule**: Every day at 2:00 AM (`0 2 * * *`)
+- **Days Ahead**: 30 days from current date
+- **Smart Coverage**: Skips generation if 80%+ coverage already exists
+- **Configurable**: Can be customized via environment variables or API
 
 ### Redis Configuration
 

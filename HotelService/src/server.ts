@@ -6,6 +6,8 @@ import { appErrorHandler, genericErrorHandler } from './middlewares/error.middle
 import logger from './config/logger.config';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import sequelize from './db/models/sequelize';
+import roomGenerationScheduler from './schedulers/roomGeneration.scheduler';
+
 const app = express();
 
 app.use(express.json());
@@ -32,4 +34,9 @@ app.listen(serverConfig.PORT, async () => {
     logger.info(`Press Ctrl+C to stop the server.`);
     await sequelize.authenticate(); // Test the connection to the database
     logger.info('Database connection has been established successfully.');
+    
+    // Start the automatic room generation scheduler
+    // Runs every day at 2:00 AM by default
+    roomGenerationScheduler.start();
+    logger.info('Automatic room generation scheduler started (daily at 2:00 AM)');
 });

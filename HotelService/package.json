@@ -7,7 +7,8 @@
     "dev": "nodemon src/server.ts",
     "migrate": "sequelize-cli db:migrate",
     "rollback": "sequelize-cli db:migrate:undo",
-    "worker": "ts-node src/workers/roomGenerator.worker.ts"
+    "worker": "ts-node src/workers/roomGenerator.worker.ts",
+    "cron-worker": "ts-node src/workers/cronRoomGenerator.worker.ts"
   },
   "keywords": [],
   "author": "",
