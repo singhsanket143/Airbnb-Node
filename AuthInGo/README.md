@@ -4,3 +4,4 @@
 2. Write a middleware to validate every incoming request body
 3. Setup a good error handling mechanism
 4. Explore ip addr and jwt based rate limiting
+5. Start wiring the api gateway with other microservices
