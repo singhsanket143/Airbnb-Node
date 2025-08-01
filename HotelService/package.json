@@ -6,7 +6,8 @@
     "start": "ts-node src/server.ts",
     "dev": "nodemon src/server.ts",
     "migrate": "sequelize-cli db:migrate",
-    "rollback": "sequelize-cli db:migrate:undo"
+    "rollback": "sequelize-cli db:migrate:undo",
+    "migrate:create": "sequelize-cli migration:generate --name "
   },
   "keywords": [],
   "author": "",

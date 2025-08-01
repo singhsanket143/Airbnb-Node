@@ -11,10 +11,11 @@ export const RoomGenerationRequestSchema = z.object({
 
 export const RoomGenerationJobSchema = z.object({
     roomCategoryId: z.number().positive(),
-    startDate: z.string().datetime(),
-    endDate: z.string().datetime(),
+    startDate: z.string().date(), // to make sure no timestamp
+    endDate: z.string().date(), // to make sure no timestamp
     priceOverride: z.number().positive().optional(),
     batchSize: z.number().positive().default(100),
+    roomNo: z.number().positive()
 });
 
 export type RoomGenerationJob = z.infer<typeof RoomGenerationJobSchema>;
@@ -25,5 +26,5 @@ export interface RoomGenerationResponse {
     totalRoomsCreated: number;
     totalDatesProcessed: number;
     errors: string[];
-    jobId: string;
+    jobId?: string;
 }
