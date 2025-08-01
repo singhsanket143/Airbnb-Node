@@ -6,3 +6,6 @@
 4. Explore ip addr and jwt based rate limiting
 5. Write apis for all the role operations like allocating role to user, getting user roles etc.
 6. Patch the middlewarechain with the new RBAC middleware.
+7. Try to implement an email confirmation mechanism for new user signup. 
+8. On new user signup, people should be able to get a user role allocated automatically. 
+9. Try to integrate anyone MFA mechanism -> EMAIL OTP | SMS OTP | MFA APP
