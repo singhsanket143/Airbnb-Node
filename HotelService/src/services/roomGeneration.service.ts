@@ -17,9 +17,11 @@ export async function generateRooms(jobData: RoomGenerationJob ) {
     let totalRoomsCreated = 0;
     let totalDatesProcessed = 0;
 
+
     const roomCategory = await roomCategoryRepository.findById(jobData.roomCategoryId);
 
     if (!roomCategory) {
+        logger.error(`Room category with id ${jobData.roomCategoryId} not found`);
         throw new NotFoundError(`Room category with id ${jobData.roomCategoryId} not found`);
     }
 
@@ -27,10 +29,12 @@ export async function generateRooms(jobData: RoomGenerationJob ) {
     const endDate = new Date(jobData.endDate);
 
     if (startDate >= endDate) {
+        logger.error(`Start date must be before end date`);
         throw new BadRequestError(`Start date must be before end date`);
     }
 
     if (startDate < new Date()) {
+        logger.error(`Start date must be in the future`);
         throw new BadRequestError(`Start date must be in the future`);
     }
     
@@ -47,6 +51,7 @@ export async function generateRooms(jobData: RoomGenerationJob ) {
         const batchEndDate = new Date(currentDate);
 
         batchEndDate.setDate(batchEndDate.getDate() + batchSize);
+
 
         if(batchEndDate > endDate ) {
             batchEndDate.setTime(endDate.getTime());
@@ -79,7 +84,6 @@ export async function processDateBatch(roomCategory: RoomCategory, startDate: Da
 
     const currentDate = new Date(startDate);
 
-
     // SELECT * FROM ROOM_CATEGORY WHERE ID = ? AND DATE_OF_AVAILABILITY BETWEEN ? and ? 
     // TODO: Use a better query to get the rooms
     while(currentDate <= endDate) {
@@ -88,23 +92,30 @@ export async function processDateBatch(roomCategory: RoomCategory, startDate: Da
             currentDate
         );
 
+        logger.info(`Existing room: ${JSON.stringify(existingRoom)} : ${currentDate}`);
+
         if(!existingRoom) {
-            roomsToCreate.push({
+            const roomPayload = {
                 hotelId: roomCategory.hotelId,
                 roomCategoryId: roomCategory.id,
-                dateOfAvailability: currentDate,
+                dateOfAvailability: new Date(currentDate),
                 price: priceOverride || roomCategory.price,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 deletedAt: null,
-            });
+            };
+            console.log(`Room payload: ${JSON.stringify(roomPayload)}`);
+            roomsToCreate.push(roomPayload);
         }
 
         currentDate.setDate(currentDate.getDate() + 1);
         datesProcessed++;
     }
 
+    console.log(`Rooms to create: ${JSON.stringify(roomsToCreate)}`);
+
     if(roomsToCreate.length > 0) {
+        logger.info(`Creating ${roomsToCreate.length} rooms`);
         await roomRepository.bulkCreate(roomsToCreate);
         roomsCreated += roomsToCreate.length;
     }

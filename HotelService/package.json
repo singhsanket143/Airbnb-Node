@@ -13,9 +13,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bullmq": "^5.56.9",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "http-status-codes": "^2.3.0",
+    "ioredis": "^5.7.0",
     "mysql2": "^3.14.0",
     "sequelize": "^6.37.7",
     "uuid": "^11.1.0",

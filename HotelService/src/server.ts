@@ -6,6 +6,7 @@ import { appErrorHandler, genericErrorHandler } from './middlewares/error.middle
 import logger from './config/logger.config';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import sequelize from './db/models/sequelize';
+import { setupRoomGenerationWorker } from './processors/roomGeneration.processor';
 const app = express();
 
 app.use(express.json());
@@ -32,4 +33,5 @@ app.listen(serverConfig.PORT, async () => {
     logger.info(`Press Ctrl+C to stop the server.`);
     await sequelize.authenticate(); // Test the connection to the database
     logger.info('Database connection has been established successfully.');
+    setupRoomGenerationWorker();
 });
