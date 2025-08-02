@@ -8,36 +8,33 @@ import { sendEmail } from "../services/mailer.service";
 import logger from "../config/logger.config";
 
 export const setupMailerWorker = () => {
+	const emailProcessor = new Worker<NotificationDto>(
+		MAILER_QUEUE, // Name of the queue
+		async (job: Job) => {
+			if (job.name !== MAILER_PAYLOAD) {
+				throw new Error("Invalid job name");
+			}
 
-    const emailProcessor = new Worker<NotificationDto>(
-        MAILER_QUEUE, // Name of the queue
-        async (job: Job) => {
+			// call the service layer from here.
+			const payload = job.data;
+			console.log(`Processing email for: ${JSON.stringify(payload)}`);
 
-            if(job.name !== MAILER_PAYLOAD) {
-                throw new Error("Invalid job name");
-            }
+			const emailContent = await renderMailTemplate(payload.templateId, payload.params);
 
-            // call the service layer from here.
-            const payload = job.data;
-            console.log(`Processing email for: ${JSON.stringify(payload)}`);
+			await sendEmail(payload.to, payload.subject, emailContent);
 
-            const emailContent = await renderMailTemplate(payload.templateId, payload.params);
+			logger.info(`Email sent to ${payload.to} with subject "${payload.subject}"`);
+		}, // Process function
+		{
+			connection: getRedisConnObject(),
+		}
+	);
 
-            await sendEmail(payload.to, payload.subject, emailContent);
+	emailProcessor.on("failed", () => {
+		console.error("Email processing failed");
+	});
 
-            logger.info(`Email sent to ${payload.to} with subject "${payload.subject}"`);
-
-        }, // Process function
-        {
-            connection: getRedisConnObject()
-        }
-    )
-
-    emailProcessor.on("failed", () => {
-        console.error("Email processing failed");
-    });
-
-    emailProcessor.on("completed", () => {
-        console.log("Email processing completed successfully");
-    });
-}
+	emailProcessor.on("completed", () => {
+		console.log("Email processing completed successfully");
+	});
+};

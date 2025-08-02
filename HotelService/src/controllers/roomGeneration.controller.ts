@@ -1,17 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { RoomGenerationJob, RoomGenerationResponse } from "../dto/roomGeneration.dto";
-import { generateRooms } from "../services/roomGeneration.service";
+import { RoomGenerationJobReq } from "../dto/roomGeneration.dto";
+import { createRoomGenerationJob } from "../services/roomGeneration.service";
 
-export async function generateRoomsHandler(req: Request, res: Response, next: NextFunction) {
-	const { totalDatesProcessed, totalRoomsCreated } = await generateRooms(
-		req.body as RoomGenerationJob
-	);
-	const response: RoomGenerationResponse = {
+export async function generateRoomsJobHandler(
+	req: Request<any, any, RoomGenerationJobReq>,
+	res: Response,
+	next: NextFunction
+) {
+	const jobReqPayload: RoomGenerationJobReq = req.body;
+	await createRoomGenerationJob(jobReqPayload);
+	res.status(StatusCodes.OK).json({
+		message: "Request added to job queue successfully",
 		success: true,
-		totalRoomsCreated: totalRoomsCreated,
-		totalDatesProcessed: totalDatesProcessed,
-		errors: [],
-	};
-	res.status(StatusCodes.CREATED).json(response);
+	});
 }

@@ -1,5 +1,6 @@
 import {
   CreationOptional,
+  DataTypes,
   InferAttributes,
   InferCreationAttributes,
   Model,
@@ -45,8 +46,12 @@ Room.init(
       },
     },
     dateOfAvailability: {
-      type: 'DATE',
+      type: DataTypes.DATEONLY, 
       allowNull: false,
+      get() {
+        const rawValue = this.getDataValue("dateOfAvailability");
+        return rawValue ? new Date(rawValue) : null;
+      }
     },
     price: {
       type: 'INTEGER',

@@ -7,16 +7,6 @@ export class RoomRepository extends BaseRepository<Room> {
 		super(Room);
 	}
 
-	async findByRoomCategoryIdAndDate(roomCategoryId: number, currentDate: Date) {
-		return await this.model.findOne({
-			where: {
-				roomCategoryId,
-				dateOfAvailability: currentDate,
-				deletedAt: null,
-			},
-		});
-	}
-
 	async findByRoomCategoryIdAndRoomNoAndDateRange(
 		roomCategoryId: number,
 		roomNo: number,
