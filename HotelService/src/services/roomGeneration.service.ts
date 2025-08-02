@@ -58,6 +58,8 @@ export async function generateRooms(jobData: RoomGenerationJob ) {
         totalDatesProcessed += batchResult.datesProcessed;
 
         currentDate.setTime(batchEndDate.getTime());
+
+        
     }
 
 
