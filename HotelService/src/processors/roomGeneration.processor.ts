@@ -6,7 +6,7 @@ import { ROOM_GENERATION_PAYLOAD_NAME } from "../producers/roomGeneration.produc
 import { getRedisConnObject } from "../config/redis.config";
 import { generateRooms } from "../services/roomGeneration.service";
 
-export const setupMailerWorker = () => {
+export const setupRoomGenWorker = () => {
 	const roomGenerationProcessor = new Worker<RoomGenerationJobReq>(
 		ROOM_GEN_JOB_QUEUE_NAME, // Name of the queue
 		async (job) => {
