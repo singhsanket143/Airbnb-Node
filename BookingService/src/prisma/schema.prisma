@@ -17,9 +17,14 @@ model Booking {
   id                Int           @id @default(autoincrement())
   userId            Int
   hotelId           Int
+  roomId            Int
+  checkInDate       DateTime
+  checkOutDate      DateTime
+  totalNights       Int
+  pricePerNight     Int
+  totalAmount       Int
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-  bookingAmount     Int
   status            BookingStatus @default(PENDING)
   totalGuests       Int
   idempotencyKey    IdempotencyKey?

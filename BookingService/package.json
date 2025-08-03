@@ -12,6 +12,8 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.8.2",
+    "@types/axios": "^0.9.36",
+    "axios": "^1.11.0",
     "bullmq": "^5.53.1",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
